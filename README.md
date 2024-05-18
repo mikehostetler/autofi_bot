@@ -31,8 +31,7 @@
 ### Running the `hello-bot`
 You can run the `hello-bot` using the CLI. The `hello-bot` prints a message and continues to do so at regular intervals.
 
-To run the `hello-bot`, use the following command:
-
+To run the `hello-bot`, use the following command: `yarn cli hello-bot`
 
 ## CLI Commands
 

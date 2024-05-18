@@ -43,6 +43,7 @@
     "axios": "^1.6.8",
     "commander": "^12.1.0",
     "dotenv": "^16.4.5",
+    "ethers": "^6.12.1",
     "graphql": "^16.8.1",
     "graphql-request": "^7.0.1",
     "pm2": "^5.3.1",

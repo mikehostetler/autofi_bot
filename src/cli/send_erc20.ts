@@ -1,8 +1,28 @@
 import { Command } from 'commander'
-import { ethers } from 'ethers'
+import { createWalletClient, http, parseEther } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { magma_onyx } from '../clients/magma_chain'
 import { RPC_URL, LOCAL_PRIVATE_KEY } from '../util/env'
 import log from '../util/log'
-
+const transferABI = [
+  {
+    name: 'transfer',
+    type: 'function',
+    inputs: [
+      {
+        name: '_to',
+        type: 'address',
+      },
+      {
+        type: 'uint256',
+        name: '_tokens',
+      },
+    ],
+    constant: false,
+    outputs: [],
+    payable: false,
+  },
+]
 export const sendTokenCommand = new Command('send-token')
   .description('Send tokens to one or more addresses')
   .requiredOption('-a, --amount <amount>', 'Amount of tokens to send to each address')
@@ -37,21 +57,29 @@ export const sendTokenCommand = new Command('send-token')
     log.debug(`Provider URL: ${rpcProvider}`)
     log.debug(`Wallet private key: ${walletPrivateKey}`)
 
-    const provider = new ethers.JsonRpcProvider(rpcProvider)
-    const wallet = new ethers.Wallet(walletPrivateKey, provider)
+    const account = privateKeyToAccount(walletPrivateKey)
+
+    const walletClient = createWalletClient({
+      chain: magma_onyx,
+      transport: http(rpcProvider),
+      account,
+    })
+
+    const transferAmount = parseEther(amount)
 
     for (const address of recipients) {
       log.info(`Sending ${amount} tokens to: ${address}`)
 
-      const tx = {
-        to: address,
-        value: ethers.parseUnits(amount, 18),
-        data: token,
-      }
-
       try {
-        const transactionResponse = await wallet.sendTransaction(tx)
-        log.info('Transaction successful: ', transactionResponse.hash)
+        const transactionHash = await walletClient.writeContract({
+          address: token,
+          abi: transferABI,
+          functionName: 'transfer',
+          args: [address, transferAmount],
+          account,
+        })
+
+        log.info('Transaction successful: ', transactionHash)
       } catch (error) {
         log.error('Transaction failed: ', error)
       }

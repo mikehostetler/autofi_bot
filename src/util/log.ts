@@ -1,7 +1,6 @@
 import { Logger, type ILogObj } from 'tslog'
 
-import { LOG_LEVEL } from './env'
-import { LogLevel } from './env'
+import { LogLevel, LOG_LEVEL } from './env'
 
 function translateLogLevel(logLevel: string | number): number {
   switch (logLevel) {

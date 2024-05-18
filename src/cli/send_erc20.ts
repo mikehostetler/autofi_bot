@@ -23,7 +23,7 @@ const transferABI = [
     payable: false,
   },
 ]
-export const sendTokenCommand = new Command('send-token')
+export const sendErc20Command = new Command('send-erc20')
   .description('Send tokens to one or more addresses')
   .requiredOption('-a, --amount <amount>', 'Amount of tokens to send to each address')
   .requiredOption('-t, --token <address>', 'Address of the token to send')

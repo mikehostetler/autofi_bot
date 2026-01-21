@@ -1,102 +1,144 @@
 # AutoFi Bot
 
-## Overview
-`autofi_bot` is a command-line tool designed to automate various tasks. This project is built using TypeScript and can be extended to include multiple bots for different purposes.
+A TypeScript scaffold for building Solana trading bots, powered by Bun.
 
-## Getting Started
+> 🔧 See also: [wreckit](https://github.com/mikehostetler/wreckit) - My companion tool for building and testing Solana bots.
 
-### Prerequisites
-- Node.js (>= 14.x)
-- Yarn (>= 1.x)
+## Features
 
-### Installation
-1. Clone the repository:
-    ```sh
-    git clone https://github.com/yourusername/autofi_bot.git
-    cd autofi_bot
-    ```
+- **Bun-native** - Fast runtime, native SQLite, ESM modules
+- **Solana integration** - @solana/web3.js with connection pooling, wallet management, tx helpers
+- **SQLite persistence** - bun:sqlite + Drizzle ORM for bot state and transaction history
+- **Async generator loops** - Efficient tick-based bot architecture
+- **Structured logging** - Pino with pretty-print support
+- **PM2 process management** - Production-ready daemon support
 
-2. Install dependencies:
-    ```sh
-    yarn install
-    ```
+## Prerequisites
 
-3. Build the project:
-    ```sh
-    yarn build
-    ```
+- [Bun](https://bun.sh) >= 1.0
 
-## Usage
+## Installation
 
-### Running the `hello-bot`
-You can run the `hello-bot` using the CLI. The `hello-bot` prints a message and continues to do so at regular intervals.
+```sh
+git clone https://github.com/mikehostetler/autofi_bot.git
+cd autofi_bot
+bun install
+```
 
-To run the `hello-bot`, use the following command: `yarn cli hello-bot`
+## Configuration
+
+Create a `.env` file:
+
+```sh
+# Required for bot operations
+SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
+SOLANA_SECRET_KEY=<base58-or-json-array>
+
+# Optional
+SOLANA_WS_URL=wss://api.mainnet-beta.solana.com
+COMMITMENT=confirmed
+LOG_LEVEL=info
+NODE_ENV=development
+```
+
+## Quick Start
+
+```sh
+# Initialize the database
+bun db:migrate
+
+# Run the example bot
+bun cli hello-bot
+
+# Check status
+bun cli status
+```
 
 ## CLI Commands
 
-- `yarn cli hello-bot`: Runs the Hello Bot
-- `yarn cli help`: Displays help information
+| Command | Description |
+|---------|-------------|
+| `bun cli hello-bot` | Run the example bot |
+| `bun cli status` | Show bot status and statistics |
+| `bun cli help` | Display help information |
 
-## Bot Execution with PM2
+## Development Commands
 
-To run bots long-term, use PM2. Add an entry for each bot in the `ecosystem.config.js` file:
+| Command | Description |
+|---------|-------------|
+| `bun test` | Run tests |
+| `bun run typecheck` | TypeScript type checking |
+| `bun lint` | Run ESLint |
+| `bun format` | Format code with Prettier |
+| `bun db:migrate` | Run database migrations |
 
+## PM2 Process Management
+
+For production, use PM2 to run bots as daemons:
+
+```sh
+bun bots:start   # Start bots defined in ecosystem.config.cjs
+bun bots:stop    # Stop all bots
+bun bots:restart # Restart all bots
+bun bots:logs    # View logs
 ```
-javascript:ecosystem.config.js
-// eslint-disable-next-line no-undef
+
+Configure bots in `ecosystem.config.cjs`:
+
+```javascript
 module.exports = {
   apps: [
     {
-      // Unique bot name
       name: 'HELLO_BOT',
-
-      // Local command to start the bot
-      script: 'yarn cli hello-bot',
+      script: 'bun',
+      args: ['run', 'src/index.ts', 'hello-bot'],
       max_memory_restart: '124M',
-
-      // Logging config
-
-      // Env specific config
-    },
-    // More bots here
-  ],
+      out_file: './logs/hello_bot.log',
+      error_file: './logs/hello_bot.error.log'
+    }
+  ]
 }
-
 ```
 
-Then use PM2 commands to manage the bots:
-- `yarn bots:start`: Starts the bots
-- `yarn bots:stop`: Stops the bots
-- `yarn bots:restart`: Restarts the bots
-- `yarn bots:logs`: Displays bot logs
+## Project Structure
 
-## Bun Support (Limited)
+```
+src/
+├── bot/        # BaseBot class with async generator tick loop
+├── cli/        # Commander.js CLI commands
+├── db/         # SQLite database (bun:sqlite + Drizzle ORM)
+├── solana/     # Solana client (connection, wallet, tx helpers)
+└── util/       # Environment config, logging
+```
 
-While we love Bun, please note that this project has limited support for it.  We've experienced issues with some of the older blockchain libraries we use. We recommend using Node.js for the best experience.
+## Building a Bot
 
-## Contributing
+Extend `BaseBot` and implement `onTick`:
 
-Pull requests are welcome! For major changes, please open an issue first to discuss the proposed changes.
+```typescript
+import { BaseBot, BotContext } from './bot'
 
-## MIT License
+class MyBot extends BaseBot {
+  constructor() {
+    super({ name: 'MyBot', tickIntervalMs: 1000 })
+  }
 
-Copyright (c) 2024 Mike Hostetler
+  async onTick(ctx: BotContext): Promise<void> {
+    const slot = await ctx.connection.getSlot()
+    // Your bot logic here
+  }
+}
+```
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## Database Schema
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+| Table | Purpose |
+|-------|---------|
+| `bot_state` | Key-value store for bot configuration |
+| `transactions` | Transaction history with status tracking |
+| `events` | Audit log for bot events |
+| `token_accounts` | Tracked token accounts and balances |
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+## License
+
+MIT License - Copyright (c) 2024 Mike Hostetler

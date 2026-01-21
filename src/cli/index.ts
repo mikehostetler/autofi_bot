@@ -1,18 +1,16 @@
 import { Command } from 'commander'
 import { helpCommand } from './help'
 import { helloBotCommand } from './hello_bot'
-import { sendErc20Command } from './send_erc20'
-import { keyFromMnemonicCommand } from './key_from_mnemonic'
+import { statusCommand } from './status'
 
 const cli = new Command()
 
 cli.configureHelp({ showGlobalOptions: true })
-cli.option('--rpc_provider <url>', 'Provider RPC endpoint (overrides RPC_URL env var)')
-cli.option('--private_key <private_key>', 'Local wallet private key (overrides LOCAL_PRIVATE_KEY env var)')
+cli.option('--rpc <url>', 'Solana RPC endpoint (overrides SOLANA_RPC_URL env var)')
+cli.option('--keypair <path>', 'Path to keypair file (overrides SOLANA_SECRET_KEY env var)')
 
 cli.addCommand(helpCommand)
 cli.addCommand(helloBotCommand)
-cli.addCommand(sendErc20Command)
-cli.addCommand(keyFromMnemonicCommand)
+cli.addCommand(statusCommand)
 
 export default cli

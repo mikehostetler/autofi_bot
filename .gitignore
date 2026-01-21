@@ -1,1 +1,29 @@
+# Build/Coverage
 coverage/
+dist/
+
+# Dependencies
+node_modules/
+
+# Bun
+bun.lock
+
+# Database
+data/*.sqlite
+data/*.sqlite-wal
+data/*.sqlite-shm
+
+# Logs
+logs/*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store

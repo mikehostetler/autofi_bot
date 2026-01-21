@@ -3,7 +3,8 @@ module.exports = {
   apps: [
     {
       name: 'HELLO_BOT',
-      script: 'yarn cli hello-bot',
+      script: 'bun',
+      args: ['run', 'src/index.ts', 'hello-bot'],
       max_memory_restart: '124M',
 
       // Logging
